@@ -1,0 +1,30 @@
+
+To structure STALWART as a billion-dollar platform while protecting its civic mission, the licensing model needs to be split cleanly into a Dual-Tier Field of Use architecture.
+
+This ensures that individual citizens, local communities, and investigative journalists always have free access, while massive corporate entities, financial institutions, and enterprise compliance departments pay heavy licensing fees for vertical market access.
+
+Update the licensing section of your repository's White Paper or README with this formal commercial structure:
+
+5. Field of Use Licensing Architecture
+STALWART operates under a strict Field of Use (FOU) Licensing Framework. This model divides the software's deployment rights across distinct market segments, separating public-interest civic advocacy from high-stakes corporate and governmental compliance monitoring.
+
+Tier 1: The Public Civic License (Zero-Cost / Open Access)
+Authorized Users: Individual citizens, registered non-profits, local grassroots coalitions, municipal governments (populations under 100,000), and accredited investigative journalists.
+
+Permitted Field of Use: Grassroots environmental auditing, local municipal zoning oversight, public-record translation, and community-level accountability campaigns (such as the Cosmo Superfund deployment).
+
+Cost: Permanently free and open-source under standard community guidelines.
+
+Tier 2: The Enterprise Commercial License (Monetized SaaS / API)
+Authorized Users: Multinational corporations, real estate development portfolios, hedge funds, financial institutions, corporate law firms, and federal/state government compliance contractors.
+
+Permitted Field of Use: Institutional regulatory tracking, predictive legislative risk assessment, multi-state corporate compliance monitoring, and automated portfolio impact modeling.
+
+Cost: High-tier enterprise SaaS agreements, custom API integration fees, and multi-seat corporate licensing structures managed through Malt Studio.
+
+Tier 3: The Restricted Defense & Pharma Intelligence Tier
+Authorized Users: Regulated defense contractors, pharmaceutical enterprises, and federal agency oversight bodies.
+
+Permitted Field of Use: Large-scale parsing of complex federal dockets (FDA, DoD, EPA) for corporate risk mitigation and automated Freedom of Information Act (FOIA) pipeline management.
+
+Cost: Custom enterprise contracts incorporating mandatory audit logs and strict jurisdictional compliance boundaries.
