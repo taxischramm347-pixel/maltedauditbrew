@@ -105,7 +105,8 @@ def analyze_document_with_ai(document_text, filename):
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
-                temperature=0.2
+                temperature=0.2,
+                tools=[{"google_search": {}}]
             )
         )
         return json.loads(response.text), None
