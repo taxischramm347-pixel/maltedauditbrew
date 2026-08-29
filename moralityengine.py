@@ -1,5 +1,6 @@
 import os
 import io
+import re
 import json
 import streamlit as st
 from datetime import datetime
@@ -37,7 +38,7 @@ st.markdown("*(Automated Legislative/Policy Analysis, Real-Time Contact Discover
 # Sidebar for API Configuration & AI Toggle
 with st.sidebar:
     st.header("⚙️ Audit Configuration")
-    ai_toggle = st.checkbox("Enable Gemini AI Analysis", value=True, help="Uncheck to run offline zero-cost baseline checks.")
+    ai_toggle = st.checkbox("Enable Gemini AI Analysis", value=False, help="Uncheck to run offline zero-cost baseline regex checks.")
     
     if ai_toggle:
         api_key_input = st.text_input("Gemini API Key", type="password", value=os.environ.get("GEMINI_API_KEY", ""))
@@ -60,36 +61,135 @@ def extract_text_from_file(uploaded_file):
     return text
 
 
-def analyze_document_locally(filename):
-    """Zero-cost offline baseline scan mimicking the expected JSON schema."""
-    return {
-        "ground_truth_facts": [
-            f"File analyzed locally (AI Disabled): {filename}",
-            "Standard compliance check initiated.",
-            "No API credits consumed during this audit."
-        ],
-        "responsible_authorities": [
-            {
-                "agency_or_body": "Pending AI Activation",
+def clean_snippet(text, match_start, match_end, window=140):
+    """Extracts a readable snippet window around a regex match."""
+    start = max(0, match_start - window)
+    end = min(len(text), match_end + window)
+    raw = text[start:end].replace('\n', ' ').strip()
+    return f"...{raw}..."
+
+
+def analyze_document_locally(document_text, filename):
+    """Full deterministic forensic regex engine (Zero Cost, No API)."""
+    ground_facts = []
+    authorities = []
+    alerts = []
+
+    # 1. Extract Ground Truth Metrics
+    dollars = set(re.findall(r'\$\d{1,3}(?:,\d{3})*(?:\.\d{2})?(?:\s*(?:million|billion|trillion))?', document_text, re.IGNORECASE))
+    citations = set(re.findall(r'(?:\b\d+\s+U\.S\.C\.\s+§?\s*[\d\w\-]+|\bRCW\s+[\d\.]+|\bSection\s+\d{3,5}[a-zA-Z0-9\-]*)', document_text, re.IGNORECASE))
+    dates = set(re.findall(r'(?:(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}|\b\d{1,2}/\d{1,2}/\d{2,4}\b)', document_text))
+    percentages = set(re.findall(r'\b\d+(?:\.\d+)?%', document_text))
+
+    ground_facts.append(f"Audit Target: {filename} (Scanned locally via Deterministic Regex Engine)")
+    if dollars:
+        ground_facts.append(f"Financial Allocations Identified ({len(dollars)} items): {', '.join(list(dollars)[:8])}")
+    if citations:
+        ground_facts.append(f"Statutory Cites Detected ({len(citations)} items): {', '.join(list(citations)[:8])}")
+    if dates:
+        ground_facts.append(f"Operational Deadlines / Dates: {', '.join(list(dates)[:6])}")
+    if percentages:
+        ground_facts.append(f"Numerical Thresholds / Metrics: {', '.join(list(percentages)[:6])}")
+
+    # 2. Extract Responsible Bodies & Agencies
+    agency_patterns = [
+        r'(?:Department of (?:the Interior|Energy|Transportation|Defense|Commerce|Agriculture|State|Treasury))',
+        r'(?:Bureau of Land Management|Environmental Protection Agency|Internal Revenue Service|Federal Energy Regulatory Commission)',
+        r'(?:Office of [A-Z][a-z]+(?: [A-Z][a-z]+)*)',
+        r'(?:Secretary of [A-Z][a-z]+|Administrator|Attorney General|Comptroller)'
+    ]
+    detected_agencies = set()
+    for pattern in agency_patterns:
+        matches = re.findall(pattern, document_text, re.IGNORECASE)
+        for m in matches:
+            detected_agencies.add(m.strip())
+
+    if detected_agencies:
+        for agency in list(detected_agencies)[:6]:
+            authorities.append({
+                "agency_or_body": agency,
                 "officials": [
                     {
-                        "name": "Local Audit Mode Active",
-                        "role": "System Baseline",
-                        "public_contact": "N/A"
+                        "name": f"{agency} Administrative Officer",
+                        "role": "Regulatory Oversight & Rulemaking Officer",
+                        "public_contact": "Public Liaison / FOIA Portal"
                     }
                 ],
-                "escalation_procedure": "Re-run with AI toggle enabled for dynamic contact extraction."
-            }
-        ],
-        "statutory_alerts": [
-            {
-                "citation_type": "OFFLINE_MODE_ACTIVE",
-                "verbatim_text": "N/A",
-                "plain_english": "The audit was run using the zero-cost offline toggle. Deep semantic checks and dynamic playbooks were bypassed.",
-                "financial_pipeline": "Zero API credits consumed.",
-                "tailored_action_plan": "Review document manually or check the 'Enable Gemini AI Analysis' box in the sidebar."
-            }
-        ]
+                "escalation_procedure": f"Submit administrative petition or formal public records demand to {agency} pursuant to 5 U.S.C. § 552 / APA."
+            })
+    else:
+        authorities.append({
+            "agency_or_body": "Designated Regulatory Authority",
+            "officials": [
+                {
+                    "name": "Governing Body Clerk",
+                    "role": "Administrative Record Keeper",
+                    "public_contact": "Official Public Registry"
+                }
+            ],
+            "escalation_procedure": "Inspect docket index and petition administrative head under standard notice-and-comment requirements."
+        })
+
+    # 3. Deterministic Forensic Statutory Alerts
+    alert_rules = [
+        {
+            "type": "STATUTORY OVERRIDE | DUE PROCESS BYPASS",
+            "pattern": r'(?:notwithstanding any other provision|shall supersede|without regard to (?:section|title|law|subchapter)|waives compliance)',
+            "plain_english": "Drafted with preemptive override language to bypass existing citizen review laws, environmental compliance (NEPA/EPA), or standard public hearing rights.",
+            "pipeline": "Grants sweeping authority to administrative directors; shields recipients from statutory review.",
+            "action": "File formal challenge under 5 U.S.C. § 706 (Arbitrary, Capricious, and Unlawful Agency Action) or petition legislative review board."
+        },
+        {
+            "type": "SOLE SOURCE CARVEOUT | EXCLUSIONARY MANDATE",
+            "pattern": r'(?:defined as excluding|shall not apply to any entity|special classification|shall offer the lesser of|sole source|exclusive agreement)',
+            "plain_english": "Creates a carved-out legal tier that protects incumbent operations or creates conditional hurdles for competitor tech/clean energy adoption.",
+            "pipeline": "Directs market control or federal access to pre-qualified entities while filtering out third-party solutions.",
+            "action": "Invoke Equal Protection Clause precedents (Yick Wo v. Hopkins) and file anti-competitive procurement objections."
+        },
+        {
+            "type": "BLANK-CHECK DELEGATION | APPROPRIATED SLUSH FUND",
+            "pattern": r'(?:shall be available for|appropriated to the Secretary|unobligated balances|retained until expended|at the sole discretion)',
+            "plain_english": "Appropriates multi-million/billion dollar funds with broad spending discretion and minimal audit requirements.",
+            "pipeline": "Disburses public revenue directly to designated accounts without mandatory line-item oversight.",
+            "action": "File targeted Freedom of Information Act (FOIA) requests demanding transactional receipts, fund ledger transfers, and PAC donation intersections."
+        },
+        {
+            "type": "JUDICIAL PRECLUSION | ADMINISTRATIVE IMMUNITY",
+            "pattern": r'(?:shall not be subject to judicial review|final and non-reviewable|no court shall have jurisdiction|immune from liability)',
+            "plain_english": "Strips judicial review power from federal/state courts to prevent citizens from seeking injunctions against improper administrative execution.",
+            "pipeline": "Shields agency executives and private contractors from legal liability.",
+            "action": "Challenge statutory jurisdiction stripping under Article III constitutional separation-of-powers doctrine."
+        }
+    ]
+
+    for rule in alert_rules:
+        for match in re.finditer(rule["pattern"], document_text, re.IGNORECASE):
+            snippet = clean_snippet(document_text, match.start(), match.end())
+            alerts.append({
+                "citation_type": rule["type"],
+                "verbatim_text": snippet,
+                "plain_english": rule["plain_english"],
+                "financial_pipeline": rule["pipeline"],
+                "tailored_action_plan": rule["action"]
+            })
+            if len(alerts) >= 12:  # Limit total alerts to prevent runaway loops on huge bills
+                break
+        if len(alerts) >= 12:
+            break
+
+    if not alerts:
+        alerts.append({
+            "citation_type": "CLEAN BASELINE SCAN",
+            "verbatim_text": "No explicit statutory override or bypass keywords found in current text sample.",
+            "plain_english": "The text does not contain explicit override phrases like 'notwithstanding' or 'exclusive agreement'.",
+            "financial_pipeline": "Standard accounting/appropriations framework.",
+            "tailored_action_plan": "Execute deep scan across referenced amendment codes or verify with AI enabled."
+        })
+
+    return {
+        "ground_truth_facts": ground_facts,
+        "responsible_authorities": authorities,
+        "statutory_alerts": alerts
     }
 
 
@@ -205,7 +305,7 @@ if uploaded_files:
             if ai_toggle:
                 audit_data = analyze_document_with_ai(combined_text, ", ".join(filenames))
             else:
-                audit_data = analyze_document_locally(", ".join(filenames))
+                audit_data = analyze_document_locally(combined_text, ", ".join(filenames))
 
         if "error" in audit_data:
             st.error(f"Analysis Error: {audit_data['error']}")
