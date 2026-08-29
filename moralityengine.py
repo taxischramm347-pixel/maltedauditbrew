@@ -457,15 +457,23 @@ if 'current_audit' in st.session_state and st.session_state.current_audit:
     st.success("✔️ FORENSIC AUDIT COMPLETE: All legislative mechanisms, loopholes, and citizen harms cataloged.")
 
     # PDF Download Button
-    if SimpleDocTemplate is not None:
+if SimpleDocTemplate is None:
+    st.warning("⚠️ `reportlab` is not installed in this environment. Run `pip install reportlab` to enable PDF downloads.")
+else:
+    try:
         pdf_bytes = generate_dossier_pdf(data, st.session_state.source_filenames)
         if pdf_bytes:
             st.download_button(
                 label="📥 DOWNLOAD FULL FORENSIC CIVIC DOSSIER (PDF)",
                 data=pdf_bytes,
                 file_name=f"STALWART_Forensic_Dossier_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
-                mime="application/pdf"
+                mime="application/pdf",
+                use_container_width=True
             )
+        else:
+            st.error("⚠️ PDF compilation completed but returned empty data.")
+    except Exception as pdf_err:
+        st.error(f"⚠️ Error compiling PDF dossier: {pdf_err}")
 
     st.divider()
 
