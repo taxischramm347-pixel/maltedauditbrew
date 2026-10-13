@@ -458,3 +458,35 @@ if 'current_audit' in st.session_state and st.session_state.current_audit:
                 st.info(f"**Escalation Process:** {rp.get('escalation_procedure')}")
                 st.markdown(f"**Legal Paperwork to File:**")
                 st.code(rp.get("legal_paperwork_playbook", ""), language="markdown")
+import streamlit as st
+import ollama
+
+# Insert below your PDF or regex extraction logic
+
+st.sidebar.markdown("### STALWART Offline Audits")
+audit_type = st.sidebar.radio(
+    "Select Llama 3.1 Target Analysis:",
+    ["Deceptive Jargon Audit", "Whistleblower Loophole Audit", "Corporate Exemption Audit"]
+)
+
+if st.button("Execute Local GPU Synthesis"):
+    # Ensure 'extracted_text' contains your parsed legislation
+    if extracted_text:
+        st.warning(f"Initiating isolated offline audit: {audit_type}...")
+        
+        prompts = {
+            "Deceptive Jargon Audit": "Analyze the provided legal text. Identify any clauses containing mandatory arbitration, non-disclosure (gag orders), non-disparagement, or indemnification requirements. Translate the practical effect of these clauses into plain English. Identify exactly what legal rights the individual is forfeiting.",
+            "Whistleblower Loophole Audit": "Analyze this legislative text for whistleblower protections. Identify the exact reporting channels, the financial reward structures, and the anti-retaliation provisions. Critically audit the text for loopholes: identify any strict statutes of limitations, burden-of-proof requirements placed on the whistleblower, or exemptions.",
+            "Corporate Exemption Audit": "Audit the provided text for corporate exemptions, tax subsidies, or liability shields. Extract the exact names of any corporate entities, industry groups, or financial structures that receive a direct monetary benefit, reduced regulatory oversight, or immunity from prosecution."
+        }
+        
+        # Route to local Ollama instance running on the RTX 4050
+        response = ollama.chat(model='llama3.1', messages=[
+            {'role': 'system', 'content': prompts[audit_type]},
+            {'role': 'user', 'content': extracted_text}
+        ])
+        
+        st.subheader("Synthesis Complete")
+        st.write(response['message']['content'])
+    else:
+        st.error("Target data missing. Load legislation to proceed.")
